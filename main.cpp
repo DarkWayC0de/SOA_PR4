@@ -4,9 +4,10 @@
 #include <iostream>
 #include "gaussianblur.h"
 #include <QDir>
+#define RUTAORIG "../soa-1920-pipeline-DarkWayC0de/Images/"
+#define RUTARESULT "../soa-1920-pipeline-DarkWayC0de/result/gb_"
 
-QImage toGrayScale(QImage imagen)
-{
+QImage toGrayScale(QImage imagen){
     for(int i=0; i < imagen.width(); i++)
     {
         for(int j=0; j < imagen.height(); j++)
@@ -24,7 +25,7 @@ int main(int argc, char *argv[])
     QElapsedTimer timer;
     timer.start();
 
-    QDir dir("../../Images");
+    QDir dir(RUTAORIG);
     QStringList filtro;
     filtro << "*.png" << "*.PNG" << "*.jpg" << "*.JPG";
     filtro << "*.jpeg" << "*.JPEG";
@@ -36,14 +37,14 @@ int main(int argc, char *argv[])
     for ( const auto& i : files)
     {
         std::cout << i.toStdString() << "\n";
-        QImage imagen("../../Images/"+i);
+        QImage imagen(RUTAORIG+i);
         QImage grayimage, result;
         grayimage = toGrayScale(imagen);
         result = blur.ApplyGaussianFilterToImage(grayimage);
-        //result.save("gb_"+i);
+        result.save(RUTARESULT+i);
         QString savedFileName;
-        savedFileName = i;
-        savedFileName.replace(".","_gb.");
+        savedFileName = RUTARESULT + i;
+        savedFileName.replace(".","_gsb.");
         result.save(savedFileName);
     }
 
