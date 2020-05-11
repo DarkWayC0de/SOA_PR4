@@ -4,14 +4,16 @@
 #include <QElapsedTimer>
 #include <iostream>
 #include <QDir>
+#include <QThread>
 
 #include "gaussianblur.h"
 
-#define RUTAORIG "../soa-1920-pipeline-DarkWayC0de/Images/"
-#define RUTARESULT "../soa-1920-pipeline-DarkWayC0de/result/gb_"
+#define RUTAORIG "Images/"
+#define RUTARESULT "result/gb_"
 
 QImage toGrayScale(QImage imagen);
 void procesade(QStringList files);
+QVector<QStringList> divide_list(QVector<QStringList> file_list, int nList, int dep = 0);
 
 int main(int argc, char *argv[]){
     QCoreApplication a(argc, argv);
@@ -56,7 +58,17 @@ int main(int argc, char *argv[]){
     }else if(!comand.value("divideAndConquer").isEmpty() && (nthreads = comand.value("divideAndConquer").toInt())){
         QTextStream(stdout)<<"divide and conquer.\n";
         timer.start();
+        QVector<QStringList> list = divide_list(QVector<QStringList> {files},nthreads);
+        QVector<QThread*> threads;
 
+        for (auto &itemlist:list ){
+            QThread *athread = QThread::create(&procesade,itemlist);
+            athread -> start();
+            threads << athread;
+        }
+        for (auto& athread:threads){
+            athread -> wait();
+          }
     }else{
         QTextStream(stdout)<<"secuential.\n";
         timer.start();
@@ -93,5 +105,28 @@ void procesade(QStringList files){
       savedFileName = RUTARESULT + i;
       savedFileName.replace(".","_gsb.");
       result.save(savedFileName);
+  }
+}
+
+QVector<QStringList> divide_list(QVector<QStringList> file_list, int nList, int dep){
+  if(dep < nList){
+    QStringList newlist = file_list.first();
+    int half = newlist.length() / 2 - 1;
+    QStringList l1 ;
+    QStringList l2 ;
+    for(auto item:newlist){
+        if(half-->0){
+            l1.push_back(item);
+          }else{
+            l2.push_back(item);
+          }
+    }
+    QVector<QStringList> q1;
+    q1.push_back(l1);
+    QVector<QStringList> q2;
+    q2.push_back(l2);
+    return divide_list(q1,nList, dep + 1) + divide_list(q2,nList, dep + 1);
+  } else {
+    return file_list;
   }
 }
