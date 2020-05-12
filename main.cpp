@@ -1,3 +1,4 @@
+#include <iostream>
 #include <QCoreApplication>
 #include <QCommandLineParser>
 #include <QImage>
@@ -5,15 +6,12 @@
 #include <iostream>
 #include <QDir>
 #include <QThread>
+#include <QThreadPool>
 
-#include "gaussianblur.h"
+#include "globalfunctions.h"
+#include "grayscaleqrunable.h"
+#include "blurqrunable.h"
 
-#define RUTAORIG "Images/"
-#define RUTARESULT "result/gb_"
-
-QImage toGrayScale(QImage imagen);
-void procesade(QStringList files);
-QVector<QStringList> divide_list(QVector<QStringList> file_list, int nList, int dep = 0);
 
 int main(int argc, char *argv[]){
     QCoreApplication a(argc, argv);
@@ -53,7 +51,46 @@ int main(int argc, char *argv[]){
     QTextStream(stdout)<<"Strategy has been chosen: ";
     if(!comand.value("threadpoll").isEmpty() && (nthreads = comand.value("threadpoll").toInt())){
         QTextStream(stdout)<<"threadpoll.\n";
+
         timer.start();
+
+        QThreadPool::globalInstance()->setMaxThreadCount(nthreads);
+        QVector<GrayScaleQRunable*> pipelineGrayScale;
+        QVector<BlurQRunable*> pipelineBlur;
+
+        for (const auto& i: files){
+            QString name =QString::fromStdString(i.toStdString());
+            QTextStream(stdout) << name << "\n";
+            QImage imagen(RUTAORIG+i);
+
+            GrayScaleQRunable* aGrayScale =
+                new GrayScaleQRunable(imagen,QString::fromStdString(i.toStdString()));
+
+            QThreadPool::globalInstance()->start(aGrayScale);
+            pipelineGrayScale << aGrayScale;
+        }
+
+        while (!(pipelineGrayScale.empty() && pipelineBlur.empty())) {
+            if(!pipelineGrayScale.empty()){
+              if(pipelineGrayScale.first()->finished()){
+                  BlurQRunable* aBlur = new BlurQRunable(pipelineGrayScale.first()->image(),pipelineGrayScale.first()->filename());
+                  delete  pipelineGrayScale.first();
+                  pipelineGrayScale.pop_front();
+                  QThreadPool::globalInstance()->start(aBlur);
+                  pipelineBlur << aBlur;
+               }
+            }
+            if(!pipelineBlur.empty()){
+              if(pipelineBlur.first()->finished()){
+                 pipelineBlur.first()->image().save(RUTARESULT+pipelineBlur.first()->filename());
+                 delete pipelineBlur.first();
+                 pipelineBlur.pop_front();
+              }
+            }
+            std::cout<<"gray:"<<pipelineGrayScale.size()<<" blur:"<<pipelineBlur.size()<<" \n";
+          }
+
+      QThreadPool::globalInstance()->setMaxThreadCount(QThread::idealThreadCount());
 
     }else if(!comand.value("divideAndConquer").isEmpty() && (nthreads = comand.value("divideAndConquer").toInt())){
         QTextStream(stdout)<<"divide and conquer.\n";
@@ -79,54 +116,6 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-QImage toGrayScale(QImage imagen){
-    for(int i=0; i < imagen.width(); i++)
-    {
-        for(int j=0; j < imagen.height(); j++)
-        {
-            int graypixel = qGray(imagen.pixel(i,j));
-            imagen.setPixel(i,j, QColor(graypixel,graypixel,graypixel).rgb());
-        }
-    }
-    return imagen;
-}
 
-void procesade(QStringList files){
-  GaussianBlur blur(3,5);
 
-  for ( const auto& i : files) {
-      std::cout << i.toStdString() << "\n";
-      QImage imagen(RUTAORIG+i);
-      QImage grayimage, result;
-      grayimage = toGrayScale(imagen);
-      result = blur.ApplyGaussianFilterToImage(grayimage);
-      result.save(RUTARESULT+i);
-      QString savedFileName;
-      savedFileName = RUTARESULT + i;
-      savedFileName.replace(".","_gsb.");
-      result.save(savedFileName);
-  }
-}
 
-QVector<QStringList> divide_list(QVector<QStringList> file_list, int nList, int dep){
-  if(dep < nList){
-    QStringList newlist = file_list.first();
-    int half = newlist.length() / 2 - 1;
-    QStringList l1 ;
-    QStringList l2 ;
-    for(auto item:newlist){
-        if(half-->0){
-            l1.push_back(item);
-          }else{
-            l2.push_back(item);
-          }
-    }
-    QVector<QStringList> q1;
-    q1.push_back(l1);
-    QVector<QStringList> q2;
-    q2.push_back(l2);
-    return divide_list(q1,nList, dep + 1) + divide_list(q2,nList, dep + 1);
-  } else {
-    return file_list;
-  }
-}

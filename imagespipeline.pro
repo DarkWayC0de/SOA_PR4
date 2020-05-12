@@ -16,7 +16,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-    gaussianblur.cpp
+    gaussianblur.cpp \
+    grayscaleqrunable.cpp \
+    blurqrunable.cpp \
+    globalfunctions.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -24,4 +27,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    gaussianblur.h
+    gaussianblur.h \
+    grayscaleqrunable.h \
+    blurqrunable.h \
+    globalfunctions.h
