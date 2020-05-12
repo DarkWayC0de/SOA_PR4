@@ -69,11 +69,11 @@ int main(int argc, char *argv[]){
             QThreadPool::globalInstance()->start(aGrayScale);
             pipelineGrayScale << aGrayScale;
         }
-
+        GaussianBlur blur(3,5);
         while (!(pipelineGrayScale.empty() && pipelineBlur.empty())) {
             if(!pipelineGrayScale.empty()){
               if(pipelineGrayScale.first()->finished()){
-                  BlurQRunable* aBlur = new BlurQRunable(pipelineGrayScale.first()->image(),pipelineGrayScale.first()->filename());
+                  BlurQRunable* aBlur = new BlurQRunable(pipelineGrayScale.first()->image(),pipelineGrayScale.first()->filename(),blur);
                   delete  pipelineGrayScale.first();
                   pipelineGrayScale.pop_front();
                   QThreadPool::globalInstance()->start(aBlur);
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]){
                  pipelineBlur.pop_front();
               }
             }
-            std::cout<<"gray:"<<pipelineGrayScale.size()<<" blur:"<<pipelineBlur.size()<<" \n";
+            //std::cout<<"gray:"<<pipelineGrayScale.size()<<" blur:"<<pipelineBlur.size()<<" \n";
           }
 
       QThreadPool::globalInstance()->setMaxThreadCount(QThread::idealThreadCount());

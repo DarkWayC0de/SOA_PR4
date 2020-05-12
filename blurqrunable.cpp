@@ -16,7 +16,6 @@ bool BlurQRunable::finished() const
 }
 
 void BlurQRunable::run(){
- GaussianBlur blur(3,5);
- image_ =  blur.ApplyGaussianFilterToImage(image_);
+ image_ =  blur_->ApplyGaussianFilterToImage(image_);
  finished_ = true;
 }

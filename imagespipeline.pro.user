@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.11.1, 2020-05-12T14:05:31. -->
+<!-- Written by QtCreator 4.11.1, 2020-05-12T14:37:15. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -288,7 +288,7 @@
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/darkwayc0de/Escritorio/ULL/3/SOA/soa-1920-pipeline-DarkWayC0de/imagespipeline.pro</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/darkwayc0de/Escritorio/ULL/3/SOA/soa-1920-pipeline-DarkWayC0de/imagespipeline.pro</value>
-    <value type="QString" key="RunConfiguration.Arguments"> -p 8</value>
+    <value type="QString" key="RunConfiguration.Arguments"> -p 4</value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
